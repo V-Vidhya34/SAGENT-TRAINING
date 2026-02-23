@@ -16,19 +16,18 @@ public class Book {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long bId;
+    private Long id;
 
-    private String bTitle;
-    private String bAuthor;
+    private String title;
+    private String author;
+
+    private String genre;
+    private Integer quantity;
 
     @Enumerated(EnumType.STRING)
-    private BookStatus bStatus;
+    private BookStatus status;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Borrow> borrows;
-
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
-    @JsonIgnore
-    private List<BookGenre> genres;
 }

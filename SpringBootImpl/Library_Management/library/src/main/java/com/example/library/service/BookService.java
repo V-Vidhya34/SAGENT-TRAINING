@@ -12,23 +12,28 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BookService {
 
-    private final BookRepository repository;
+    private final BookRepository bookRepo;
 
     public Book save(Book book) {
-        book.setBStatus(BookStatus.AVAILABLE);
-        return repository.save(book);
+        if (book.getQuantity() == null || book.getQuantity() <= 0) {
+            book.setQuantity(0);
+            book.setStatus(BookStatus.NOT_AVAILABLE);
+        } else {
+            book.setStatus(BookStatus.AVAILABLE);
+        }
+        return bookRepo.save(book);
     }
 
     public List<Book> getAll() {
-        return repository.findAll();
+        return bookRepo.findAll();
     }
 
     public Book getById(Long id) {
-        return repository.findById(id)
+        return bookRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Book not found"));
     }
 
     public void delete(Long id) {
-        repository.deleteById(id);
+        bookRepo.deleteById(id);
     }
 }

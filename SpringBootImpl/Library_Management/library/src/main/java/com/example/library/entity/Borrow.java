@@ -15,14 +15,14 @@ public class Borrow {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long boId;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "mem_id")
     private Member member;
 
     @ManyToOne
-    @JoinColumn(name = "b_id")
+    @JoinColumn(name = "book_id")
     private Book book;
 
     private LocalDate issueDate;

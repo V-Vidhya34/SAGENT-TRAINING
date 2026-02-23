@@ -3,9 +3,11 @@ package com.example.library.controller;
 import com.example.library.entity.Member;
 import com.example.library.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/members")
@@ -32,5 +34,16 @@ public class MemberController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         service.delete(id);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
+        String email = credentials.get("email");
+        String password = credentials.get("password");
+        return service.getAll().stream()
+                .filter(m -> m.getEmail().equals(email) && m.getPassword().equals(password))
+                .findFirst()
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(401).body(Map.of("message", "Invalid credentials")));
     }
 }

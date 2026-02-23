@@ -12,12 +12,12 @@ public class Fine {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long fineId;
+    private Long id;
 
     private Double amount;
     private String paidStatus;
 
     @OneToOne
-    @JoinColumn(name = "bo_id")
+    @JoinColumn(name = "borrow_id")
     private Borrow borrow;
 }

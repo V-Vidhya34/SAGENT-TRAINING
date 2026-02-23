@@ -14,14 +14,12 @@ public class BorrowController {
 
     private final BorrowService service;
 
-    // Borrow book
     @PostMapping("/{memId}/{bookId}")
     public Borrow borrowBook(@PathVariable Long memId,
                              @PathVariable Long bookId) {
         return service.borrowBook(memId, bookId);
     }
 
-    // Return book
     @PutMapping("/{borrowId}/return")
     public Borrow returnBook(@PathVariable Long borrowId) {
         return service.returnBook(borrowId);
@@ -32,9 +30,13 @@ public class BorrowController {
         return service.getAll();
     }
 
+    @GetMapping("/member/{memId}")
+    public List<Borrow> getByMember(@PathVariable Long memId) {
+        return service.getByMemberId(memId);
+    }
+
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         service.deleteBorrow(id);
     }
-
 }

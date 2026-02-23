@@ -20,8 +20,7 @@ public class BorrowService {
     private final BookRepository bookRepo;
     private final FineRepository fineRepo;
 
-    // BORROW BOOK
-    public Borrow borrowBook(Long memId, Long bookId) {
+        public Borrow borrowBook(Long memId, Long bookId) {
 
         Member member = memberRepo.findById(memId)
                 .orElseThrow(() -> new RuntimeException("Member not found"));
@@ -29,11 +28,17 @@ public class BorrowService {
         Book book = bookRepo.findById(bookId)
                 .orElseThrow(() -> new RuntimeException("Book not found"));
 
-        if (book.getBStatus() != BookStatus.AVAILABLE) {
+        if (book.getStatus() != BookStatus.AVAILABLE) {
             throw new RuntimeException("Book not available");
         }
 
-        book.setBStatus(BookStatus.NOT_AVAILABLE);
+        book.setQuantity(book.getQuantity() - 1);
+
+        if (book.getQuantity() == 0) {
+            book.setStatus(BookStatus.NOT_AVAILABLE);
+        }
+
+        bookRepo.save(book);
 
         Borrow borrow = Borrow.builder()
                 .member(member)
@@ -45,8 +50,6 @@ public class BorrowService {
 
         return borrowRepo.save(borrow);
     }
-
-    // RETURN BOOK
     public Borrow returnBook(Long borrowId) {
 
         Borrow borrow = borrowRepo.findById(borrowId)
@@ -55,7 +58,15 @@ public class BorrowService {
         borrow.setReturnDate(LocalDate.now());
         borrow.setBoStatus(BorrowStatus.RETURNED);
 
-        borrow.getBook().setBStatus(BookStatus.AVAILABLE);
+        Book book = borrow.getBook();
+
+        book.setQuantity(book.getQuantity() + 1);
+
+        if (book.getQuantity() > 0) {
+            book.setStatus(BookStatus.AVAILABLE);
+        }
+
+        bookRepo.save(book);
 
         if (borrow.getReturnDate().isAfter(borrow.getDueDate())) {
 
@@ -64,7 +75,7 @@ public class BorrowService {
                     borrow.getReturnDate());
 
             Fine fine = Fine.builder()
-                    .amount(daysLate * 10.0) // ₹10 per day
+                    .amount(daysLate * 10.0)
                     .paidStatus("NOT_PAID")
                     .borrow(borrow)
                     .build();
@@ -75,21 +86,29 @@ public class BorrowService {
         return borrowRepo.save(borrow);
     }
 
-
     public void deleteBorrow(Long id) {
         Borrow borrow = borrowRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Borrow not found"));
 
-        // If book is still borrowed, make it available
-        if (borrow.getBoStatus().name().equals("BORROWED")) {
-            borrow.getBook().setBStatus(BookStatus.AVAILABLE);
+        if (borrow.getBoStatus() == BorrowStatus.BORROWED) {
+            Book book = borrow.getBook();
+            book.setQuantity(book.getQuantity() + 1);
+            if (book.getQuantity() > 0) {
+                book.setStatus(BookStatus.AVAILABLE);
+            }
+            bookRepo.save(book);
         }
 
         borrowRepo.deleteById(id);
     }
 
-
     public List<Borrow> getAll() {
         return borrowRepo.findAll();
+    }
+
+    public List<Borrow> getByMemberId(Long memId) {
+        return borrowRepo.findAll().stream()
+                .filter(b -> b.getMember().getId().equals(memId))
+                .collect(java.util.stream.Collectors.toList());
     }
 }
